@@ -8,7 +8,7 @@ import org.jeka.demowebinar1no_react.repo.ChatRepository;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
-import org.springframework.ai.chat.memory.InMemoryChatMemory;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -32,8 +32,8 @@ public class ChatService {
     @Autowired
     private ChatService myProxy;
 
-
-
+//    @Autowired
+//    private PostgresChatMemory postgresChatMemory;
 
     public List<Chat> getAllChats() {
         return chatRepo.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -68,24 +68,21 @@ public class ChatService {
     }
 
     public SseEmitter proceedInteractionWithStreaming(Long chatId, String userPrompt) {
-        myProxy.addChatEntry(chatId, userPrompt, USER);
 
         SseEmitter sseEmitter = new SseEmitter(0L);
         final StringBuilder answer = new StringBuilder();
 
         chatClient
                 .prompt(userPrompt)
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .stream()
                 .chatResponse()
                 .subscribe(
                         (ChatResponse response) -> processToken(response, sseEmitter, answer),
                         sseEmitter::completeWithError,
-                        () -> myProxy.addChatEntry(chatId, answer.toString(), ASSISTANT));
+                        sseEmitter::complete);
         return sseEmitter;
     }
-
-
-
 
     @SneakyThrows
     private static void processToken(ChatResponse response, SseEmitter emitter, StringBuilder answer) {

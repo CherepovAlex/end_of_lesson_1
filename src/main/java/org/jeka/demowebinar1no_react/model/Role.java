@@ -13,7 +13,22 @@ import java.util.Arrays;
 @Getter
 public enum Role {
 
-    USER("user"), ASSISTANT("assistant"), SYSTEM("system");
+    USER("user"){
+        @Override
+        Message getMessage(String message) {
+            return new UserMessage(message);
+        }
+    }, ASSISTANT("assistant"){
+        @Override
+        Message getMessage(String message) {
+            return new AssistantMessage(message);
+        }
+    }, SYSTEM("system") {
+        @Override
+        Message getMessage(String message) {
+            return new SystemMessage(message);
+        }
+    };
 
     private final String role;
 
@@ -21,4 +36,5 @@ public enum Role {
         return Arrays.stream(Role.values()).filter(role -> role.role.equals(roleName)).findFirst().orElseThrow();
     }
 
+    abstract Message getMessage(String promt);
 }
