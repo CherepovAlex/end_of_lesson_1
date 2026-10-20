@@ -4,11 +4,12 @@ import org.jeka.demowebinar1no_react.repo.ChatRepository;
 import org.jeka.demowebinar1no_react.services.PostgresChatMemory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.MessageWindowChatMemory;
-import org.springframework.ai.chat.prompt.ChatOptions;
-import org.springframework.ai.ollama.api.OllamaOptions;
-import org.springframework.aop.Advisor;
+import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,15 +19,34 @@ import org.springframework.context.annotation.Bean;
 @SpringBootApplication
 public class DemoWebinar1NoReactApplication {
 
+    private static final PromptTemplate MY_PROMPT_TEMPLATE = new PromptTemplate(
+            "{query}\n\n" +
+                    "Контекст:\n" +
+                    "---------------------\n" +
+                    "{question_answer_context}\n" +
+                    "---------------------\n\n" +
+                    "Отвечай только на основе контекста выше. Если информации нет в контексте, сообщи, что не можешь ответить."
+    );
+
     @Autowired
     private ChatRepository chatRepository;
 
+    @Autowired
+    private VectorStore vectorStore;
+
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder) {
-        return builder.defaultAdvisors(getAdvisor()).build();
+        return builder.defaultAdvisors(getHistoryAdvisor(), getRagAdvisor()).build();
     }
 
-    private Advisor getAdvisor() {
+    private Advisor getRagAdvisor() {
+        return QuestionAnswerAdvisor.builder(vectorStore).promptTemplate(MY_PROMPT_TEMPLATE).searchRequest(
+                SearchRequest.builder().topK(4).build()
+        ).build();
+    }
+
+
+    private MessageChatMemoryAdvisor getHistoryAdvisor() {
         return MessageChatMemoryAdvisor.builder(getChatMemory()).build();
     }
 
