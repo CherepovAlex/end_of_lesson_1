@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoadedDocument {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,7 +31,7 @@ public class LoadedDocument {
     private int chunkCount;
 
     @CreationTimestamp
-    private LocalDateTime loadedAt;
+    private LocalDateTime loadedAt ;
 }
 
 //    id            SERIAL PRIMARY KEY,

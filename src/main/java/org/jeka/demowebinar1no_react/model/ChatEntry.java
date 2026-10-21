@@ -29,6 +29,7 @@ public class ChatEntry {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+
     public static ChatEntry toChatEntry(Message message) {
         return ChatEntry.builder()
                 .role(Role.getRole(message.getMessageType().getValue()))
@@ -36,8 +37,8 @@ public class ChatEntry {
                 .build();
     }
 
+
     public Message toMessage() {
         return role.getMessage(content);
     }
-
 }

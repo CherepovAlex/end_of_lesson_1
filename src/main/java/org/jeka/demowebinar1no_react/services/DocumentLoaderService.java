@@ -30,6 +30,7 @@ public class DocumentLoaderService implements CommandLineRunner {
     @Autowired
     private VectorStore vectorStore;
 
+
     @SneakyThrows
     public void loadDocuments() {
         List<Resource> resources = Arrays.stream(resolver.getResources("classpath:/knowledgebase/**/*.txt")).toList();
@@ -51,14 +52,16 @@ public class DocumentLoaderService implements CommandLineRunner {
                             .contentHash(pair.getSecond())
                             .build();
                     documentRepository.save(loadedDocument);
+
                 });
+
+
     }
 
     @SneakyThrows
     private String calcContentHash(Resource resource) {
         return DigestUtils.md5DigestAsHex(resource.getInputStream());
     }
-
 
     @Override
     public void run(String... args) throws Exception {

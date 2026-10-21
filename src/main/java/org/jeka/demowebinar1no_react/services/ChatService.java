@@ -32,8 +32,9 @@ public class ChatService {
     @Autowired
     private ChatService myProxy;
 
-//    @Autowired
-//    private PostgresChatMemory postgresChatMemory;
+
+
+
 
     public List<Chat> getAllChats() {
         return chatRepo.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -83,6 +84,8 @@ public class ChatService {
                         sseEmitter::complete);
         return sseEmitter;
     }
+
+
 
     @SneakyThrows
     private static void processToken(ChatResponse response, SseEmitter emitter, StringBuilder answer) {
